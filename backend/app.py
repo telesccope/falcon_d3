@@ -1,9 +1,15 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 import json
 from flask_cors import CORS
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../frontend', static_url_path='')
+
 CORS(app)
+
+@app.route('/')
+def serve_index():
+    return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/api/graph')
 def get_graph():
