@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function() {
         .attr("height", height);
 
     const axiosInstance = axios.create({
-        baseURL: 'http://ec2-3-80-143-117.compute-1.amazonaws.com:5000/' 
+        baseURL: 'https://travelassistant.uk' 
     });
 
     // 获取第一个图的数据
