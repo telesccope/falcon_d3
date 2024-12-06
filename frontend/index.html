@@ -7,17 +7,29 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script defer src="script.js"></script>
+    <script src="script.js"></script>
 </head>
 <body>
     <h1>Shortest Path Visualization</h1>
-    <div class="graphs-container">
-        <div id="graph1">
-            <svg></svg>
+    <div class="tabs">
+        <div class="tab active-tab" onclick="showTab('graph')">Graphs</div>
+        <div class="tab" onclick="showTab('leaderboard')">Leaderboard</div>
+    </div>
+    <div id="graph" class="tab-content active-content">
+        <div class="graphs-container">
+            <div id="graph1">
+                <svg></svg>
+            </div>
+            <div id="graph2">
+                <svg></svg>
+            </div>
         </div>
-        <div id="graph2">
-            <svg></svg>
-        </div>
+    </div>
+    <div id="leaderboard" class="tab-content">
+        <h2>Leaderboard</h2>
+        <ul id="leaderboard-list">
+            <!-- Leaderboard items will be dynamically inserted here -->
+        </ul>
     </div>
 </body>
 </html>

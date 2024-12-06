@@ -130,4 +130,33 @@ document.addEventListener("DOMContentLoaded", function() {
             }, index * 1500);
         });
     }
+
+
+    function populateLeaderboard() {
+        const leaderboardData = [
+            { name: 'Alice', score: 100 },
+            { name: 'Bob', score: 90 },
+            { name: 'Charlie', score: 80 }
+        ];
+
+        const leaderboardList = document.getElementById('leaderboard-list');
+        leaderboardData.forEach(entry => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${entry.name}: ${entry.score}`;
+            leaderboardList.appendChild(listItem);
+        });
+    }
+    // Populate leaderboard on page load
+    populateLeaderboard();
 });
+
+function showTab(tabId) {
+    const tabs = document.querySelectorAll('.tab');
+    const contents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => tab.classList.remove('active-tab'));
+    contents.forEach(content => content.classList.remove('active-content'));
+
+    document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active-tab');
+    document.getElementById(tabId).classList.add('active-content');
+}    

@@ -8,3 +8,26 @@
     border: 1px solid #ccc; 
     margin: 10px;
 }
+.tabs {
+    display: flex;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+.tab {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    background-color: #f1f1f1;
+}
+.tab-content {
+    display: none;
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+.active-tab {
+    background-color: #fff;
+    border-bottom: 1px solid #fff;
+}
+.active-content {
+    display: block;
+}
