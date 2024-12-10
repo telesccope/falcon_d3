@@ -1,18 +1,44 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
 
 db = SQLAlchemy()
 
-class PathPerformance(db.Model):
-    __tablename__ = 'path_performance'
+class Node(db.Model):
+    __tablename__ = 'node'
     
-    id = db.Column(db.Integer, primary_key=True)
-    start_node = db.Column(db.String(64), nullable=False)
-    end_node = db.Column(db.String(64), nullable=False)
-    algorithm = db.Column(db.String(64), nullable=False)
-    steps = db.Column(db.Integer, nullable=False)
-    execution_time = db.Column(db.Float, nullable=False)  # Time in seconds
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    
+    NodeID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    Name = db.Column(db.String(255), nullable=False)
+    Coordinates = db.Column(db.String(255), nullable=False)  # Assuming point is stored as a string
+
     def __repr__(self):
-        return f'<PathPerformance {self.algorithm} from {self.start_node} to {self.end_node}>'
+        return f'<Node {self.Name}>'
+
+
+class Edge(db.Model):
+    __tablename__ = 'edge'
+    
+    EdgeID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    SourceNodeID = db.Column(db.Integer, db.ForeignKey('node.NodeID'), nullable=False)
+    DestinationNodeID = db.Column(db.Integer, db.ForeignKey('node.NodeID'), nullable=False)
+    Distance = db.Column(db.Float, nullable=False)
+    Bidirectional = db.Column(db.Boolean, nullable=False)
+
+    source_node = db.relationship('Node', foreign_keys=[SourceNodeID])
+    destination_node = db.relationship('Node', foreign_keys=[DestinationNodeID])
+
+    def __repr__(self):
+        return f'<Edge {self.SourceNodeID} to {self.DestinationNodeID}>'
+
+
+class Heuristic(db.Model):
+    __tablename__ = 'heuristic'
+    
+    HeuristicID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    SourceNodeID = db.Column(db.Integer, db.ForeignKey('node.NodeID'), nullable=False)
+    DestinationNodeID = db.Column(db.Integer, db.ForeignKey('node.NodeID'), nullable=False)
+    HeuristicValue = db.Column(db.Float, nullable=False)
+
+    source_node = db.relationship('Node', foreign_keys=[SourceNodeID])
+    destination_node = db.relationship('Node', foreign_keys=[DestinationNodeID])
+
+    def __repr__(self):
+        return f'<Heuristic from {self.SourceNodeID} to {self.DestinationNodeID}>'

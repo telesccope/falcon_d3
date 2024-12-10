@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Points</title>
+    <link rel="stylesheet" href="assets/style/select_points.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">FALCON</div>
+            <ul>
+                <li><a href="#">Comparison</a></li>
+                <li><a href="#">History</a></li>
+                <li><a href="#">About</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <h1>Enter coordinates OR click start and end on the map</h1> 
+        <div>
+            <label for="startCoord">Start Coordinate</label>
+            <input type="text" id="startCoord" placeholder="100,30">
+            
+            <label for="endCoord">End Coordinate</label>
+            <input type="text" id="endCoord" placeholder="300,25">
+        </div>
+        <div>
+            <label for="graphSelect">Select Graph:</label>
+            <select id="graphSelect">
+                <option value="">--Select a Graph--</option>
+            </select>
+        </div>
+        <div>
+            <h2>Click on the map</h2>
+            <div id="networkGraph" style="width: 100%; height: 600px;">
+                <svg></svg>
+            </div>
+        </div>
+        <button id="chooseAlgorithmButton">Choose Algorithms →</button>
+    </main>
+    <script src="./assets/scripts/select_points.js"></script>
+</body>
+</html>

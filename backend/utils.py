@@ -3,7 +3,10 @@ import geopandas as gpd
 import heapq
 import math
 
+import time
+
 def dijkstra_with_steps(graph, start, end):
+    start_time = time.time()
     queue = [(0, start, [])]
     seen = set()
     min_dist = {start: 0}
@@ -33,9 +36,11 @@ def dijkstra_with_steps(graph, start, end):
                 min_dist[neighbor] = new_cost
                 heapq.heappush(queue, (new_cost, neighbor, path))
     
-    return steps, final_path
+    end_time = time.time()
+    return steps, final_path, end_time - start_time
 
 def bellman_ford_with_steps(graph, start, end):
+    start_time = time.time()
     steps = []
     distance = {node: float('inf') for node in graph}
     distance[start] = 0
@@ -62,9 +67,11 @@ def bellman_ford_with_steps(graph, start, end):
         path.insert(0, current)
         current = predecessor[current]
 
-    return steps, path, distance[end]
+    end_time = time.time()
+    return steps, path, distance[end], end_time - start_time
 
 def floyd_warshall_with_steps(graph):
+    start_time = time.time()
     dist = {u: {v: float('inf') for v in graph} for u in graph}
     next_node = {u: {v: None for v in graph} for u in graph}
     steps = []
@@ -83,9 +90,11 @@ def floyd_warshall_with_steps(graph):
                     next_node[i][j] = next_node[i][k]
                     steps.append((i, j, dist[i][j]))
 
-    return steps, dist, next_node
+    end_time = time.time()
+    return steps, dist, next_node, end_time - start_time
 
 def astar_with_steps(graph, start, end, heuristic=None):
+    start_time = time.time()
     if heuristic is None:
         heuristic = lambda u, v: 0
     
@@ -119,33 +128,8 @@ def astar_with_steps(graph, start, end, heuristic=None):
                 priority = new_cost + heuristic(neighbor, end)
                 heapq.heappush(queue, (priority, neighbor, path))
     
-    return steps, final_path
-
-def topological_sort_with_steps(graph):
-    from collections import deque
-
-    in_degree = {u: 0 for u in graph}
-    for u in graph:
-        for v in graph[u]:
-            in_degree[v] += 1
-
-    queue = deque([u for u in graph if in_degree[u] == 0])
-    sorted_list = []
-    steps = []
-
-    while queue:
-        u = queue.popleft()
-        sorted_list.append(u)
-        steps.append(u)
-        for v in graph[u]:
-            in_degree[v] -= 1
-            if in_degree[v] == 0:
-                queue.append(v)
-
-    if len(sorted_list) != len(graph):
-        raise ValueError("Graph is not a DAG")
-
-    return steps, sorted_list
+    end_time = time.time()
+    return steps, final_path, end_time - start_time
 
 def manhattan_heuristic(u, v):
     x1, y1 = u

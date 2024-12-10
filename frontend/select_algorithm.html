@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Algorithms</title>
+    <link rel="stylesheet" href="assets/style/select_algorithm.css">
+
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">FALCON</div>
+            <ul>
+                <li><a href="#">Comparison</a></li>
+                <li><a href="#">History</a></li>
+                <li><a href="#">About</a></li>
+            </ul>
+        </nav>
+    </header>
+    <h1>Choose Two Algorithms</h1>
+    <input type="text" id="algorithmInput" placeholder="Add an algorithm" list="algorithmList">
+    <datalist id="algorithmList"></datalist>
+
+    <div id="selectedAlgorithms">
+        <div class="algorithm-card" id="algorithm1">
+            <span>Algorithm 1</span>
+            <span class="remove" onclick="removeAlgorithm(1)">×</span>
+        </div>
+        <div class="algorithm-card" id="algorithm2">
+            <span>Algorithm 2</span>
+            <span class="remove" onclick="removeAlgorithm(2)">×</span>
+        </div>
+    </div>
+
+    <button id="comparisonButton">See Comparison →</button>
+
+    <script>
+        const algorithmInput = document.getElementById('algorithmInput');
+        const algorithmList = document.getElementById('algorithmList');
+        const selectedAlgorithms = document.getElementById('selectedAlgorithms');
+
+        let selectedAlgorithm1 = null;
+        let selectedAlgorithm2 = null;
+
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                graph: params.get('graph'),
+                start: params.get('start'),
+                end: params.get('end')
+            };
+        }
+
+        // Get parameters for graph, start, and end
+        const params = getUrlParams();
+        const graph = params.graph;
+        const start = params.start;
+        const end = params.end;
+
+        async function fetchAlgorithms() {
+            try {
+                const response = await fetch('/api/algorithms');
+                const algorithms = await response.json();
+                algorithms.forEach(algorithm => {
+                    const option = document.createElement('option');
+                    option.value = algorithm;
+                    algorithmList.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error fetching algorithms:', error);
+            }
+        }
+
+        algorithmInput.addEventListener('change', function() {
+            const value = algorithmInput.value;
+            if (!selectedAlgorithm1) {
+                selectedAlgorithm1 = value;
+                document.getElementById('algorithm1').querySelector('span').textContent = value;
+            } else if (!selectedAlgorithm2) {
+                selectedAlgorithm2 = value;
+                document.getElementById('algorithm2').querySelector('span').textContent = value;
+            }
+            algorithmInput.value = '';
+        });
+
+        function removeAlgorithm(number) {
+            if (number === 1) {
+                selectedAlgorithm1 = null;
+                document.getElementById('algorithm1').querySelector('span').textContent = 'Algorithm 1';
+            } else if (number === 2) {
+                selectedAlgorithm2 = null;
+                document.getElementById('algorithm2').querySelector('span').textContent = 'Algorithm 2';
+            }
+        }
+
+        document.getElementById('comparisonButton').addEventListener('click', function() {
+            if (!selectedAlgorithm1 || !selectedAlgorithm2) {
+                alert('Please select two algorithms.');
+                return;
+            }
+            const params = new URLSearchParams({
+                graph: graph,
+                start: start,
+                end: end,
+                algorithm1: selectedAlgorithm1,
+                algorithm2: selectedAlgorithm2
+            });
+            window.location.href = `results.html?${params.toString()}`;
+        });
+
+        fetchAlgorithms();
+    </script>
+
+</body>
+</html>
