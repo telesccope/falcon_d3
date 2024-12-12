@@ -1,6 +1,5 @@
 let currentCoords = null;
 
-// Fetch all graph filenames and populate the dropdown
 fetch('/api/graph')
     .then(response => response.json())
     .then(graphIds => {
@@ -13,7 +12,6 @@ fetch('/api/graph')
         });
     });
 
-// Load the selected graph
 document.getElementById('graphSelect').addEventListener('change', function() {
     const graphId = this.value;
     if (graphId) {
@@ -26,21 +24,18 @@ document.getElementById('graphSelect').addEventListener('change', function() {
 });
 
 function createPopup(nodeInfo) {
-    // Create overlay
     const overlay = document.createElement('div');
     overlay.className = 'popup-overlay';
     document.body.appendChild(overlay);
 
-    // Create popup
     const popup = document.createElement('div');
     popup.className = 'popup';
 
     const popupContent = document.createElement('div');
     popupContent.className = 'popup-content';
 
-    // Display node information
     const info = document.createElement('p');
-    info.textContent = `Node Info: ${nodeInfo.id}`; // 使用 nodeInfo.id
+    info.textContent = `Node Info: ${nodeInfo.id}`; 
     popupContent.appendChild(info);
 
     const message = document.createElement('p');
@@ -132,12 +127,18 @@ function drawGraph(graph) {
                 .on("start", dragstarted)
                 .on("drag", dragged)
                 .on("end", dragended))
-                .on("click", function(event, d) {
-                    event.stopPropagation();
-                    currentCoords = { x: d.x, y: d.y };
-                    console.log("Node clicked:", currentCoords); 
-                    createPopup(d);
-                });
+            .on("click", function(event, d) {
+                event.stopPropagation();
+                currentCoords = { x: d.x, y: d.y };
+                console.log("Node clicked:", currentCoords); 
+                createPopup(d);
+            })
+            .on("mouseover", function(event, d) {
+                showTooltip(event, d);
+            })
+            .on("mouseout", function() {
+                hideTooltip();
+            });
 
         simulation
             .nodes(nodes)
@@ -173,6 +174,33 @@ function drawGraph(graph) {
             if (!event.active) simulation.alphaTarget(0);
             d.fx = null;
             d.fy = null;
+        }
+
+        function showTooltip(event, d) {
+            const tooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("position", "absolute")
+                .style("background-color", "#fff")
+                .style("border", "1px solid #ccc")
+                .style("border-radius", "5px")
+                .style("padding", "10px")
+                .style("box-shadow", "0 4px 8px rgba(0, 0, 0, 0.1)")
+                .style("pointer-events", "none")
+                .style("font-family", "Arial, sans-serif")
+                .style("font-size", "12px")
+                .style("color", "#333");
+
+            tooltip.html(`
+                <strong>Node:</strong> ${d.id}<br>
+            `);
+
+            tooltip.style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY + 10) + "px")
+                .style("opacity", 1);
+        }
+
+        function hideTooltip() {
+            d3.select("body").selectAll(".tooltip").remove();
         }
     } else {
         console.error("No features found in the graph data.");

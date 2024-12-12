@@ -1,65 +1,120 @@
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-from app import app
-from database import db, PathPerformance
+from database import Node, Edge, ShortestPathResult
+from utils import insert_network_data
+import json
 
 class DatabaseManager:
     def __init__(self, db):
         self.db = db
 
-    def add_performance(self, start_node, end_node, algorithm, steps, execution_time):
-        performance = PathPerformance(
-            start_node=start_node,
-            end_node=end_node,
-            algorithm=algorithm,
-            steps=steps,
-            execution_time=execution_time
-        )
-        self.db.session.add(performance)
+    def add_node(self, name, coordinates):
+        """Adds a new node to the database."""
+        node = Node(Name=name, Coordinates=coordinates)
+        self.db.session.add(node)
         self.db.session.commit()
-        return performance
+        return node
 
-    def get_all_performances(self):
-        return PathPerformance.query.all()
+    def add_edge(self, source_node_id, destination_node_id, distance, bidirectional):
+        """Adds a new edge to the database."""
+        edge = Edge(
+            SourceNodeID=source_node_id,
+            DestinationNodeID=destination_node_id,
+            Distance=distance,
+            Bidirectional=bidirectional
+        )
+        self.db.session.add(edge)
+        self.db.session.commit()
+        return edge
 
-    def get_performance_by_id(self, performance_id):
-        return self.db.session.get(PathPerformance, performance_id)
+    def get_all_nodes(self):
+        """Fetches all nodes from the database."""
+        return Node.query.all()
 
-    def get_performances_by_algorithm(self, algorithm):
-        return PathPerformance.query.filter_by(algorithm=algorithm).all()
+    def get_all_edges(self):
+        """Fetches all edges from the database."""
+        return Edge.query.all()
 
-    def delete_performance(self, performance_id):
-        performance = self.get_performance_by_id(performance_id)
-        if performance:
-            self.db.session.delete(performance)
-            self.db.session.commit()
-            return True
-        return False
+    def get_node_by_id(self, node_id):
+        """Fetches a node by its ID."""
+        return self.db.session.get(Node, node_id)
+    
+    def get_node_by_coordinates(self, coordinates):
+        """Fetches a node by its coordinates."""
+        coord_str = f"{coordinates[0]},{coordinates[1]}"
+        return Node.query.filter_by(Coordinates=coord_str).first()
+
+
+    def get_edge_by_id(self, edge_id):
+        """Fetches an edge by its ID."""
+        return self.db.session.get(Edge, edge_id)
+
+    def add_shortest_path_result(self, algorithm, start_node_id, end_node_id, path, total_weight, steps, time):
+        """Adds a shortest path result to the database."""
+        result = ShortestPathResult(
+            Algorithm=algorithm,
+            StartNodeID=start_node_id,
+            EndNodeID=end_node_id,
+            Path=json.dumps(path),  
+            TotalWeight=total_weight,
+            Steps=steps,
+            Time=time
+        )
+        self.db.session.add(result)
+        self.db.session.commit()
+        return result
+
+    def get_all_shortest_path_results(self):
+        """Fetches all shortest path results from the database."""
+        return ShortestPathResult.query.all()
+    
+    def get_statistics(self):
+        from sqlalchemy.sql import func
+        from sqlalchemy.orm import aliased
+
+        results = (
+            self.db.session.query(
+                ShortestPathResult.Algorithm,
+                func.count(ShortestPathResult.ResultID).label("total_records"),
+                func.avg(ShortestPathResult.Steps).label("average_steps"),
+                func.avg(func.length(ShortestPathResult.Path) - func.length(func.replace(ShortestPathResult.Path, ',', '')) + 1).label("average_path_length"), 
+                func.avg(ShortestPathResult.Time).label("average_time"),
+                func.avg(ShortestPathResult.TotalWeight).label("average_weight")  
+            )
+            .group_by(ShortestPathResult.Algorithm)
+            .all()
+        )
+
+        statistics = [
+            {
+                "algorithm": result.Algorithm,
+                "total_records": result.total_records,
+                "average_steps": round(result.average_steps, 2) if result.average_steps else 0,
+                "average_path_length": round(result.average_path_length, 2) if result.average_path_length else 0,
+                "average_time": round(result.average_time, 4) if result.average_time else 0,
+                "average_weight": round(result.average_weight, 3) if result.average_weight else 0,  
+            }
+            for result in results
+        ]
+
+        return statistics
+
+    
 
 if __name__ == '__main__':
+    from app import db, app
+    """
+    import geopandas as gpd
+    import json
     with app.app_context():
         db_manager = DatabaseManager(db)
 
-        # Add a new performance record
-        new_performance = db_manager.add_performance(
-            start_node='A',
-            end_node='B',
-            algorithm='Dijkstra',
-            steps=10,
-            execution_time=0.005
-        )
-        print(f'Added: {new_performance}')
+        gdf = gpd.read_file('./data/graph/complete_graph.geojson')
 
-        # Query all performances
-        performances = db_manager.get_all_performances()
-        for performance in performances:
-            print(performance)
+        # 将 GeoDataFrame 转换为 GeoJSON 格式的字典
+        geojson_data = json.loads(gdf.to_json())
 
-        # Query performances by algorithm
-        dijkstra_performances = db_manager.get_performances_by_algorithm('Dijkstra')
-        for performance in dijkstra_performances:
-            print(performance)
-
-        # Delete a performance
-        success = db_manager.delete_performance(new_performance.id)
-        print(f'Deletion successful: {success}')
+        # 插入网络图数据
+        insert_network_data(geojson_data, db_manager)
+    """
+    with app.app_context():
+        db_manager = DatabaseManager(db)
+        print(db_manager.get_statistics())

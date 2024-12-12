@@ -1,0 +1,112 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 40px;
+    border-bottom: 1px solid #ddd;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+nav .logo {
+    font-weight: bold;
+    font-size: 18px;
+    color: #333;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 25px;
+    margin: 0;
+    padding: 0;
+}
+
+nav a {
+    text-decoration: none;
+    color: #333;
+    font-size: 14px;
+    transition: color 0.3s;
+}
+
+nav a:hover {
+    color: #555;
+}
+
+main {
+    text-align: center;
+    padding: 50px 20px;
+}
+
+h1 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #000;
+}
+
+.divider {
+    width: 80%;
+    margin: 0 auto 50px;
+    border: none;
+    border-top: 2px solid #ddd;
+}
+
+.team {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 50px;
+    flex-wrap: wrap; 
+}
+
+.member {
+    text-align: center;
+    max-width: 150px;
+}
+
+.avatar {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    overflow: hidden; 
+    border: 2px solid #000;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+}
+
+h2 {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 0 10px;
+}
+
+p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.illustration {
+    margin-top: 50px;
+}
+
+.illustration img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}

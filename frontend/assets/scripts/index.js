@@ -5,3 +5,4 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = 'select_points.html';
     });
 });
+

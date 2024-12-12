@@ -2,7 +2,7 @@ import networkx as nx
 import geopandas as gpd
 import heapq
 import math
-
+import random
 import time
 
 def dijkstra_with_steps(graph, start, end):
@@ -150,11 +150,82 @@ def calculate_total_weight(graph, path):
         total_weight += edge_weight
     return total_weight
 
+def generate_random_point_pairs(starts, ends, num_pairs=1000):
+    '''
+    Randomly generate a specified number of point pairs with different start and end points
+    
+    Parameters:
+    starts (list): List of start points
+    ends (list): List of end points
+    num_pairs (int): Number of point pairs to generate, default is 1000
+    
+    Return:
+    A tuple containing lists of start points and end points
+    '''
+    # Check if the length of input lists > num_pairs
+    if len(starts) < num_pairs or len(ends) < num_pairs:
+        raise ValueError('Input list length must be at least the number of point pairs.')
+    
+    start_indices = random.sample(range(len(starts)), num_pairs)
+    end_indices = random.sample(range(len(ends)), num_pairs)
+
+    # Ensure start and end points are different
+    for i in range(num_pairs):
+        while starts[start_indices[i]] == ends[end_indices[i]]:
+            end_indices[i] = random.choice(range(len(ends)))
+
+    start_pairs = [starts[idx] for idx in start_indices]
+    end_pairs = [ends[idx] for idx in end_indices]
+
+    return start_pairs, end_pairs
+
+
+def insert_network_data(data, db_manager):
+    """Parses and inserts network data into the database."""
+    nodes = {}  
+    edges = []  
+
+    for feature in data['features']:
+        properties = feature['properties']
+        geometry = feature['geometry']
+
+        coordinates = geometry['coordinates']
+
+        for idx, coord in enumerate(coordinates):
+            coord_str = f"{coord[0]},{coord[1]}" 
+            if coord_str not in nodes:
+                node = db_manager.add_node(name=f"Node_{len(nodes) + 1}", coordinates=coord_str)
+                nodes[coord_str] = node.NodeID
+
+            if idx == 0:
+                continue
+
+            source = nodes[f"{coordinates[idx - 1][0]},{coordinates[idx - 1][1]}"]
+            destination = nodes[coord_str]
+            distance = properties['length']  
+            bidirectional = True  
+
+            edges.append((source, destination, distance, bidirectional))
+
+    print(f"Inserted {len(nodes)} nodes")
+
+    for edge in edges:
+        db_manager.add_edge(
+            source_node_id=edge[0],
+            destination_node_id=edge[1],
+            distance=edge[2],
+            bidirectional=edge[3]
+        )
+
+
 if __name__ == '__main__':
-    # 创建一个有向图
     G = nx.DiGraph()
     edges = []
-    gdf = gpd.read_file('./data/line5.geojson')
+    
+    starts = []
+    ends = []
+
+    gdf = gpd.read_file('./data/graph/complete_graph.geojson')
 
     for _, row in gdf.iterrows():
         geom = row.geometry
@@ -165,50 +236,87 @@ if __name__ == '__main__':
             length = geom.length
             edges.append((start_node, end_node, length))
             edges.append((end_node, start_node, length))
+
+            starts.append(start_node)
+            ends.append(end_node)
         else:
             raise ValueError(f"Unexpected geometry type: {geom.geom_type}")
         
     G.add_weighted_edges_from(edges)
     
-    # 设置起始和结束节点
+    start_pairs, end_pairs = generate_random_point_pairs(starts,ends)
+    
+    # Initialize total steps, paths, time, weight variables for each algorithm
+    dijkstra_steps_sum = 0
+    dijkstra_time_sum = 0
+    dijkstra_total_weight_sum = 0
+    astar_steps_sum = 0
+    astar_time_sum = 0
+    astar_total_weight_sum = 0
+    astar_steps2_sum = 0
+    astar_time2_sum = 0
+    astar_total_weight2_sum = 0
+    bellman_ford_steps_sum = 0
+    bellman_ford_time_sum = 0
+    bellman_ford_total_weight_sum = 0
+    floyd_warshall_steps_sum = 0
+    floyd_warshall_time_sum = 0
+    floyd_warshall_total_weight_sum = 0
+
+    '''
     start_node = (462555.702, 89140.515)
     end_node = (463122.297, 88799.614)
+    '''
 
-    # Dijkstra算法
-    dijkstra_steps, dijkstra_path = dijkstra_with_steps(G, start_node, end_node)
-    dijkstra_total_weight = calculate_total_weight(G, dijkstra_path)
-    print(f"Dijkstra Path: {dijkstra_path}")
-    print(f"Dijkstra Total Weight: {dijkstra_total_weight}")
-    print(f"Dijkstra Steps: {len(dijkstra_steps)}")
+    for i in range(1000):
+        start_node = start_pairs[i]
+        end_node = end_pairs[i]
 
-    # A*算法（曼哈顿启发式）
-    astar_steps, astar_path = astar_with_steps(G, start_node, end_node, heuristic=manhattan_heuristic)
-    astar_total_weight = calculate_total_weight(G, astar_path)
-    print(f"A* (Manhattan) Path: {astar_path}")
-    print(f"A* (Manhattan) Total Weight: {astar_total_weight}")
-    print(f"A* (Manhattan) Steps: {len(astar_steps)}")
+        # Dijkstra
+        dijkstra_steps, dijkstra_path, dijkstra_time = dijkstra_with_steps(G, start_node, end_node)
+        dijkstra_total_weight = calculate_total_weight(G, dijkstra_path)
+        dijkstra_steps_sum += len(dijkstra_steps)
+        dijkstra_total_weight_sum += dijkstra_total_weight
+        dijkstra_time_sum += dijkstra_time
+        
+        # A* (Manhattan)
+        astar_steps, astar_path, astar_time = astar_with_steps(G, start_node, end_node, heuristic=manhattan_heuristic)
+        astar_total_weight = calculate_total_weight(G, astar_path)
+        astar_steps_sum += len(astar_steps)
+        astar_total_weight_sum += astar_total_weight
+        astar_time_sum += astar_time
 
-    # A*算法（欧氏启发式）
-    astar_steps2, astar_path2 = astar_with_steps(G, start_node, end_node, heuristic=euclidean_heuristic)
-    astar_total_weight2 = calculate_total_weight(G, astar_path2)
-    print(f"A* (Euclidean) Path: {astar_path2}")
-    print(f"A* (Euclidean) Total Weight: {astar_total_weight2}")
-    print(f"A* (Euclidean) Steps: {len(astar_steps2)}")
+        # A* (Euclidean)
+        astar_steps2, astar_path2, astar_time2 = astar_with_steps(G, start_node, end_node, heuristic=euclidean_heuristic)
+        astar_total_weight2 = calculate_total_weight(G, astar_path2)
+        astar_steps2_sum += len(astar_steps2)
+        astar_total_weight2_sum += astar_total_weight2
+        astar_time2_sum += astar_time2
+        '''
+        # Bellman-Ford
+        bellman_ford_steps, bellman_ford_path, bellman_ford_total_weight, bellman_ford_time = bellman_ford_with_steps(G, start_node, end_node)
+        bellman_ford_steps_sum += len(bellman_ford_steps)
+        bellman_ford_total_weight_sum += bellman_ford_total_weight
+        bellman_ford_time_sum += bellman_ford_time
 
-    # Bellman-Ford算法
-    try:
-        bellman_ford_steps, bellman_ford_path, bellman_ford_total_weight = bellman_ford_with_steps(G, start_node, end_node)
-        print(f"Bellman-Ford Path: {bellman_ford_path}")
-        print(f"Bellman-Ford Total Weight: {bellman_ford_total_weight}")
-        print(f"Bellman-Ford Steps: {len(bellman_ford_steps)}")
-    except ValueError as e:
-        print(e)
+        # Floyd-Warshall
+        floyd_warshall_steps, floyd_warshall_dist, floyd_warshall_next_node, floyd_warshall_time = floyd_warshall_with_steps(G)
+        floyd_warshall_total_weight = floyd_warshall_dist[start_node][end_node]
+        floyd_warshall_steps_sum += len(floyd_warshall_steps)
+        floyd_warshall_total_weight_sum += floyd_warshall_total_weight
+        floyd_warshall_time_sum += floyd_warshall_time
+        '''
 
-    # Floyd-Warshall算法
-    floyd_warshall_steps, floyd_warshall_dist, _ = floyd_warshall_with_steps(G)
-    floyd_warshall_total_weight = floyd_warshall_dist[start_node][end_node]
-    print(f"Floyd-Warshall Total Weight: {floyd_warshall_total_weight}")
-    print(f"Floyd-Warshall Steps: {len(floyd_warshall_steps)}")
+    print(f"Dijkstra Steps: {dijkstra_steps_sum/1000}")
+    print(f"Dijkstra Total Weight: {dijkstra_total_weight_sum/1000}")
+    print(f"Dijkstra Time: {dijkstra_time_sum/1000}")
 
-    # 比较路径是否相同
-    print(f"Same path (Dijkstra vs A*): {dijkstra_path == astar_path}")
+    print(f"A* (Manhattan) Steps: {astar_steps_sum/1000}")
+    print(f"A* (Manhattan) Total Weight: {astar_total_weight_sum/1000}")
+    print(f"A* (Manhattan) Time: {astar_time_sum/1000}")
+
+    print(f"A* (Euclidean) Steps: {astar_steps2_sum/1000}")
+    print(f"A* (Euclidean) Total Weight: {astar_total_weight2_sum/1000}")
+    print(f"A* (Euclidean) Time: {astar_time2_sum/1000}")
+    
+    

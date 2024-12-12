@@ -7,7 +7,8 @@ import networkx as nx
 import math
 
 from database import db
-from utils import dijkstra_with_steps, astar_with_steps, bellman_ford_with_steps, euclidean_heuristic, floyd_warshall_with_steps, calculate_total_weight
+from utils import dijkstra_with_steps, astar_with_steps, bellman_ford_with_steps, euclidean_heuristic, manhattan_heuristic, floyd_warshall_with_steps, calculate_total_weight
+from database_manager import DatabaseManager
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -41,7 +42,7 @@ def get_graph(graph_id):
 
 @app.route('/api/algorithms', methods=['GET'])
 def get_all_algorithms():
-    algorithms = ['Dijkstra', 'A*', 'Bellman-Ford', 'Floyd-Warshall']
+    algorithms = ['Dijkstra', 'A* (Manhattan)', 'A* (Euclidean)', 'BellmanFord']
     return jsonify(algorithms)
 
 @app.route('/api/shortest-path/<string:graph>/<string:algorithm>/<string:source>/<string:target>')
@@ -83,20 +84,82 @@ def get_shortest_path(graph, algorithm, source, target):
     #print(f"Graph nodes: {G.nodes}")
     # Check if source and target exist in the graph
     if source not in G or target not in G:
-        #同时return source，taget和graph的nodes
         return jsonify({'error': 'Source or target not found', 'source': source, 'target': target, 'nodes': list(G.nodes)}), 400
-
+    db_manager = DatabaseManager(db)
     if algorithm == 'Dijkstra':
         steps, path, time_taken = dijkstra_with_steps(G, source, target)
         total_weight = calculate_total_weight(G, path)
-    elif algorithm == 'A*':
+
+        source_str = json.dumps(source)  
+        target_str = json.dumps(target)  
+        path_str = json.dumps(path)     
+
+        db_manager.add_shortest_path_result(
+            algorithm="Dijkstra",
+            start_node_id=source_str,
+            end_node_id=target_str,
+            path=path_str,
+            total_weight=total_weight,
+            steps=len(steps),
+            time=time_taken
+        )
+
+    elif algorithm == 'A* (Euclidean)':
         steps, path, time_taken = astar_with_steps(G, source, target, heuristic=euclidean_heuristic)
         total_weight = calculate_total_weight(G, path)
+
+        source_str = json.dumps(source)
+        target_str = json.dumps(target)
+        path_str = json.dumps(path)
+
+        db_manager.add_shortest_path_result(
+            algorithm="A* (Euclidean)",
+            start_node_id=source_str,
+            end_node_id=target_str,
+            path=path_str,
+            total_weight=total_weight,
+            steps=len(steps),
+            time=time_taken
+        )
+
+    elif algorithm == 'A* (Manhattan)':
+        steps, path, time_taken = astar_with_steps(G, source, target, heuristic=manhattan_heuristic)
+        total_weight = calculate_total_weight(G, path)
+
+        source_str = json.dumps(source)
+        target_str = json.dumps(target)
+        path_str = json.dumps(path)
+
+        db_manager.add_shortest_path_result(
+            algorithm="A* (Manhattan)",
+            start_node_id=source_str,
+            end_node_id=target_str,
+            path=path_str,
+            total_weight=total_weight,
+            steps=len(steps),
+            time=time_taken
+        )
+
     elif algorithm == 'BellmanFord':
         steps, path, total_weight, time_taken = bellman_ford_with_steps(G, source, target)
-        total_weight = calculate_total_weight(G, path)
+
+        source_str = json.dumps(source)
+        target_str = json.dumps(target)
+        path_str = json.dumps(path)
+
+        db_manager.add_shortest_path_result(
+            algorithm="Bellman-Ford",
+            start_node_id=source_str,
+            end_node_id=target_str,
+            path=path_str,
+            total_weight=total_weight,
+            steps=len(steps),
+            time=time_taken
+        )
+
     else:
-        return jsonify({'error': 'Algorithm not supported'}), 400
+        raise ValueError("Unsupported algorithm selected!")
+
 
     # Return all information
     return jsonify({
@@ -106,6 +169,12 @@ def get_shortest_path(graph, algorithm, source, target):
         'time_taken': round(time_taken*1000,3)
     })
 
+@app.route('/api/statistics', methods=['GET'])
+def get_algorithm_statistics():
+    db_manager = DatabaseManager(db) 
+    with app.app_context():  
+        statistics = db_manager.get_statistics()  
+    return jsonify(statistics)  
 
 def create_tables():
     """Create database tables."""
@@ -113,18 +182,7 @@ def create_tables():
         db.create_all()
     print('Database tables created.')
 
-def insert_dummy_data():
-    """Insert dummy data into the database."""
-    with app.app_context():
-        example_data = [
-            PathPerformance(start_node='A', end_node='D', algorithm='Dijkstra', steps=3, execution_time=0.002),
-            PathPerformance(start_node='B', end_node='E', algorithm='A*', steps=4, execution_time=0.003)
-        ]
-        db.session.bulk_save_objects(example_data)
-        db.session.commit()
-    print('Inserted dummy data into the database.')
 
 if __name__ == '__main__':
-    create_tables()  # Create tables on startup
-    # insert_dummy_data()
+    create_tables()  
     app.run(debug=True, host='0.0.0.0', port=5001)

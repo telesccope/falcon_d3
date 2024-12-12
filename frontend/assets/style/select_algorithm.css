@@ -3,50 +3,122 @@ body {
     margin: 0;
     padding: 0;
     text-align: center;
+    background-color: #f9f9f9;
+    color: #333;
 }
 
 nav {
     display: flex;
     justify-content: space-between;
-    padding: 20px;
-    border-bottom: 1px solid #ccc;
+    padding: 20px 40px;
+    border-bottom: 1px solid #ddd;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 nav .logo {
     font-weight: bold;
+    font-size: 18px;
+    color: #333;
 }
 
 nav ul {
     list-style: none;
     display: flex;
-    gap: 20px;
+    gap: 25px;
+    margin: 0;
+    padding: 0;
 }
 
 nav a {
     text-decoration: none;
-    color: black;
+    color: #333;
+    font-size: 14px;
+    transition: color 0.3s;
 }
+
+nav a:hover {
+    color: #555;
+}
+
+#algorithmInput {
+    display: block;
+    width: 60%;
+    padding: 12px;
+    margin: 15px auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: #fff;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#algorithmInput:focus {
+    border-color: #999;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    outline: none;
+}
+
 .algorithm-card {
     display: inline-block;
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin: 10px;
-    width: 150px;
-    height: 100px;
-    vertical-align: top;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 15px;
+    width: 45%;
+    height: 120px;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: left;
     position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
+
+.algorithm-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
 .algorithm-card .remove {
     position: absolute;
-    top: 5px;
-    right: 5px;
+    top: 10px;
+    right: 10px;
     cursor: pointer;
+    font-size: 14px;
+    color: #888;
+    transition: color 0.3s;
 }
+
+.algorithm-card .remove:hover {
+    color: #555;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    max-width: 900px; 
+    margin: 0 auto;
+    padding: 30px 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
 #comparisonButton {
-    margin-top: 20px;
-    padding: 10px 20px;
+    display: block;
+    width: 100%;
+    padding: 15px;
     background-color: black;
     color: white;
     border: none;
+    border-radius: 8px;
+    font-size: 16px;
     cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    margin-top: 20px;
+}
+
+#comparisonButton:hover {
+    background-color: gray;
+    transform: scale(1.05);
 }

@@ -52,7 +52,15 @@ function drawGraph(svgElement, graph, steps, path) {
             .data(nodes)
             .enter().append("circle")
             .attr("r", 20)
-            .attr("fill", d => pathSet.has(d.id) ? "#ff7f0e" : (stepSet.has(d.id) ? "#2ca02c" : "#1f77b4"))
+            .attr("fill", d => 
+                pathSet.has(d.id) 
+                    ? "#FFA500"  
+                    : (stepSet.has(d.id) 
+                        ? "#6FCF97"  
+                        : "#CCCCCC"  
+                    )
+            )
+
             .call(d3.drag()
                 .on("start", dragstarted)
                 .on("drag", dragged)
@@ -98,21 +106,51 @@ function drawGraph(svgElement, graph, steps, path) {
     }
 }
 
-
-
 async function visualize(graphId, algorithm, start, end, svgSelector, infoSelector) {
     const graph = await fetchGraph(graphId);
     const result = await fetchShortestPath(graphId, algorithm, start, end);
+
+    if (!graph || !result) {
+        console.error("Failed to fetch graph or shortest path data.");
+        return;
+    }
+
     drawGraph(svgSelector, graph, result.steps, result.path);
 
     const infoDiv = document.querySelector(infoSelector);
     infoDiv.innerHTML = `
-        <div class="bar"><div class="bar-inner" style="width:${result.time_taken * 100}px"></div><span class="bar-label">Time: ${result.time_taken}</span></div>
-        <div class="bar"><div class="bar-inner" style="width:${result.steps.length * 10}px"></div><span class="bar-label">Steps: ${result.steps.length}</span></div>
-        <div class="bar"><div class="bar-inner" style="width:${result.path.length * 10}px"></div><span class="bar-label">Path: ${result.path.length}</span></div>
-        <div class="bar"><div class="bar-inner" style="width:${result.total_weight}px"></div><span class="bar-label">Weight: ${result.total_weight}</span></div>
+        <div class="bar">
+            <div class="bar-inner time" style="width: 0;"></div>
+            <span class="bar-label">Time(ms): ${result.time_taken}</span>
+        </div>
+        <div class="bar">
+            <div class="bar-inner steps" style="width: 0;"></div>
+            <span class="bar-label">Steps: ${result.steps.length}</span>
+        </div>
+        <div class="bar">
+            <div class="bar-inner path" style="width: 0;"></div>
+            <span class="bar-label">Path: ${result.path.length}</span>
+        </div>
+        <div class="bar">
+            <div class="bar-inner weight" style="width: 0;"></div>
+            <span class="bar-label">Weight: ${result.total_weight}</span>
+        </div>
     `;
+
+    // 使用 setTimeout 确保动画触发
+    setTimeout(() => {
+        const timeBar = document.querySelector(`${infoSelector} .bar-inner.time`);
+        const stepsBar = document.querySelector(`${infoSelector} .bar-inner.steps`);
+        const pathBar = document.querySelector(`${infoSelector} .bar-inner.path`);
+        const weightBar = document.querySelector(`${infoSelector} .bar-inner.weight`);
+
+        if (timeBar) timeBar.style.width = `${result.time_taken * 100}px`;
+        if (stepsBar) stepsBar.style.width = `${result.steps.length * 10}px`;
+        if (pathBar) pathBar.style.width = `${result.path.length * 10}px`;
+        if (weightBar) weightBar.style.width = `${result.total_weight}px`;
+    }, 100); // 延迟 100ms 以确保动画生效
 }
+
 function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     return {
@@ -122,6 +160,23 @@ function getUrlParams() {
         algorithm1: params.get('algorithm1'),
         algorithm2: params.get('algorithm2')
     };
+}
+
+function setAlgorithmTitles(params) {
+    const algorithmTitle1 = document.getElementById("algorithmTitle1");
+    const algorithmTitle2 = document.getElementById("algorithmTitle2");
+
+    if (params.algorithm1) {
+        algorithmTitle1.textContent = `Algorithm 1: ${params.algorithm1}`;
+    } else {
+        algorithmTitle1.textContent = "Algorithm 1: Not specified";
+    }
+
+    if (params.algorithm2) {
+        algorithmTitle2.textContent = `Algorithm 2: ${params.algorithm2}`;
+    } else {
+        algorithmTitle2.textContent = "Algorithm 2: Not specified";
+    }
 }
 
 async function fetchGraph(graphId) {
@@ -149,6 +204,7 @@ async function fetchShortestPath(graph, algorithm, start, end) {
 }
 
 const params = getUrlParams();
+setAlgorithmTitles(params);
 if (params.algorithm1) {
     visualize(params.graph, params.algorithm1, params.start, params.end, "#networkGraph1 svg", "#networkGraph1 .info");
 }

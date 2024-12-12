@@ -7,7 +7,7 @@ class Node(db.Model):
     
     NodeID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     Name = db.Column(db.String(255), nullable=False)
-    Coordinates = db.Column(db.String(255), nullable=False)  # Assuming point is stored as a string
+    Coordinates = db.Column(db.String(255), nullable=False) 
 
     def __repr__(self):
         return f'<Node {self.Name}>'
@@ -29,16 +29,20 @@ class Edge(db.Model):
         return f'<Edge {self.SourceNodeID} to {self.DestinationNodeID}>'
 
 
-class Heuristic(db.Model):
-    __tablename__ = 'heuristic'
+class ShortestPathResult(db.Model):
+    __tablename__ = 'shortest_path_result'
     
-    HeuristicID = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    SourceNodeID = db.Column(db.Integer, db.ForeignKey('node.NodeID'), nullable=False)
-    DestinationNodeID = db.Column(db.Integer, db.ForeignKey('node.NodeID'), nullable=False)
-    HeuristicValue = db.Column(db.Float, nullable=False)
+    ResultID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    Algorithm = db.Column(db.String(255), nullable=False)
+    StartNodeID = db.Column(db.Integer, db.ForeignKey('node.NodeID'), nullable=False)
+    EndNodeID = db.Column(db.Integer, db.ForeignKey('node.NodeID'), nullable=False)
+    Path = db.Column(db.Text, nullable=False)  
+    TotalWeight = db.Column(db.Float, nullable=False)
+    Steps = db.Column(db.Integer, nullable=False)
+    Time = db.Column(db.Float, nullable=False)
 
-    source_node = db.relationship('Node', foreign_keys=[SourceNodeID])
-    destination_node = db.relationship('Node', foreign_keys=[DestinationNodeID])
+    start_node = db.relationship('Node', foreign_keys=[StartNodeID])
+    end_node = db.relationship('Node', foreign_keys=[EndNodeID])
 
     def __repr__(self):
-        return f'<Heuristic from {self.SourceNodeID} to {self.DestinationNodeID}>'
+        return f"<ShortestPathResult {self.Algorithm} from {self.StartNodeID} to {self.EndNodeID}>"
