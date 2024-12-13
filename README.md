@@ -67,6 +67,18 @@ This project is a web application that visualizes the shortest path between poin
 
     The backend server will run on `http://127.0.0.1:5000` by default.
 
+5. **API Design**
+# API Documentation
+
+| **Endpoint**                                   | **Method** | **Description**                                                                                       | **Parameters**                                                                                                                                                                                                                           |
+|------------------------------------------------|------------|-------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `/`                                            | GET        | Serves the frontend index page.                                                                       | None                                                                                                                                                                                                                                    |
+| `/api/graph`                                   | GET        | Retrieves a list of all available graph IDs.                                                          | None                                                                                                                                                                                                                                    |
+| `/api/graph/<graph_id>`                        | GET        | Retrieves the details of a specific graph by its ID.                                                  | - `graph_id` (string): The ID of the graph to retrieve.                                                                                                                                                                                |
+| `/api/algorithms`                              | GET        | Retrieves a list of all supported shortest path algorithms.                                           | None                                                                                                                                                                                                                                    |
+| `/api/shortest-path/<graph>/<algorithm>/<source>/<target>` | GET        | Calculates the shortest path between two nodes using the specified algorithm.                         | - `graph` (string): The graph ID to use. <br> - `algorithm` (string): The algorithm to use (`Dijkstra`, `A* (Euclidean)`, `A* (Manhattan)`, `BellmanFord`). <br> - `source` (string): Source node as "x,y". <br> - `target` (string): Target node as "x,y". |
+| `/api/statistics`                              | GET        | Retrieves performance statistics for the algorithms from the database.                                | None                                                                                                                                                                                                                                    |
+
 ---
 
 ### Frontend
@@ -82,6 +94,50 @@ This project is a web application that visualizes the shortest path between poin
     Open `index.html` in your web browser to access the application.
 
 ---
+
+## Frontend Stack
+
+### HTML
+- **Purpose**: Used for structuring the content of the page.
+
+### CSS
+- **Purpose**: Used for styling and layout of the page.
+
+### JavaScript
+- **Purpose**: Implements interactive functionality.
+
+### D3.js
+- **Purpose**: Used for drawing network graphs and data visualization.
+
+## Backend Tech Stack
+
+### Flask
+- **Purpose**: A lightweight Python web framework used to build the backend API.
+
+### SQLAlchemy
+- **Purpose**: An ORM (Object-Relational Mapper) used for database management and interaction.
+
+### SQLite
+- **Purpose**: A lightweight database used to store performance and algorithm statistics.
+
+### GeoPandas
+- **Purpose**: A Python library used for handling geospatial data, specifically GeoJSON files.
+
+### NetworkX
+- **Purpose**: A Python library used for creating and analyzing graph structures.
+
+---
+
+### Design Suggestions
+1. Use icons or logos for each library or tool to make the explanation visually appealing.
+2. Create a flowchart or diagram to show how these technologies interact (e.g., Flask handles API requests, GeoPandas processes geospatial data, NetworkX computes graph algorithms, etc.).
+
+
+---
+
+### Design Suggestions
+1. Add a small icon or a concise code snippet for each technology.
+2. Use arrows or a flowchart to illustrate the collaboration between these technologies.
 
 ## Features
 

@@ -101,7 +101,7 @@ class DatabaseManager:
 
 if __name__ == '__main__':
     from app import db, app
-    """
+    
     import geopandas as gpd
     import json
     with app.app_context():
@@ -118,3 +118,4 @@ if __name__ == '__main__':
     with app.app_context():
         db_manager = DatabaseManager(db)
         print(db_manager.get_statistics())
+    """
