@@ -31,7 +31,7 @@ This project is a web application that visualizes the shortest path between poin
 
 ## Prerequisites
 
-- Python 3.x
+- Python 3.11.0
 - A modern web browser (e.g., Chrome, Firefox, Edge)
 
 ---
@@ -65,7 +65,7 @@ This project is a web application that visualizes the shortest path between poin
     python app.py
     ```
 
-    The backend server will run on `http://127.0.0.1:5000` by default.
+    The backend server will run on `http://127.0.0.1:5001` by default.
 
 5. **API Design**
 # API Documentation
